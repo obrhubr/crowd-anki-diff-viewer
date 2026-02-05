@@ -116,9 +116,10 @@ class ChangeClassifier:
         """
         changes = []
 
-        # Check for whitespace-only changes
+        # Check for whitespace-only changes first
+        # If only whitespace changed, don't check other conditions
         if self._is_whitespace_change(before, after):
-            changes.append(ChangeType.WHITESPACE)
+            return [ChangeType.WHITESPACE]
 
         # Check for HTML entity changes
         if self._is_entity_change(before, after):
