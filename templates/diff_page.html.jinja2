@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anki Deck Changes - {{ commit_info.hash }}</title>
+    <style>
+        {{ css_content }}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Anki Deck Changes</h1>
+        <p><strong>Commit:</strong> <code>{{ commit_info.hash }}</code> - {{ commit_info.message }}</p>
+        <p><strong>Author:</strong> {{ commit_info.author }}{% if commit_info.email %} &lt;{{ commit_info.email }}&gt;{% endif %}</p>
+        <p><strong>Date:</strong> {{ commit_info.date }}</p>
+        <p><strong>Changes:</strong> {{ total_changes }} note(s) changed
+            {% if stats %}
+            ({{ stats.added }} added, {{ stats.modified }} modified, {{ stats.deleted }} deleted)
+            {% endif %}
+        </p>
+        {% if stats and stats.cosmetic_only > 0 %}
+        <p class="cosmetic-summary">
+            <strong>ℹ️ Cosmetic Changes Hidden:</strong> {{ stats.cosmetic_only }} note(s) had formatting-only changes and are not shown below
+            {% if stats.cosmetic_breakdown %}
+            <span class="cosmetic-details">
+                {% if stats.cosmetic_breakdown.whitespace > 0 %}
+                • {{ stats.cosmetic_breakdown.whitespace }} whitespace updates
+                {% endif %}
+                {% if stats.cosmetic_breakdown.html_formatting > 0 %}
+                • {{ stats.cosmetic_breakdown.html_formatting }} HTML formatting changes
+                {% endif %}
+                {% if stats.cosmetic_breakdown.entities > 0 %}
+                • {{ stats.cosmetic_breakdown.entities }} HTML entity changes (nbsp;, etc.)
+                {% endif %}
+                {% if stats.cosmetic_breakdown.case > 0 %}
+                • {{ stats.cosmetic_breakdown.case }} letter case changes
+                {% endif %}
+                {% if stats.cosmetic_breakdown.punctuation > 0 %}
+                • {{ stats.cosmetic_breakdown.punctuation }} punctuation changes
+                {% endif %}
+                {% if stats.cosmetic_breakdown.mixed_cosmetic > 0 %}
+                • {{ stats.cosmetic_breakdown.mixed_cosmetic }} mixed cosmetic changes
+                {% endif %}
+            </span>
+            {% endif %}
+        </p>
+        {% endif %}
+    </header>
+
+    {% if changes %}
+    <nav>
+        <h2>Table of Contents</h2>
+        <ul>
+            {% set ns = namespace(decks={}) %}
+            {% for change in changes %}
+                {% if change.deck_path not in ns.decks %}
+                    {% set _ = ns.decks.update({change.deck_path: {'added': 0, 'modified': 0, 'deleted': 0, 'first_index': loop.index}}) %}
+                {% endif %}
+                {% set _ = ns.decks[change.deck_path].update({change.change_type: ns.decks[change.deck_path][change.change_type] + 1}) %}
+            {% endfor %}
+
+            {% for deck_path, stats in ns.decks.items() %}
+            <li>
+                <a href="#note-{{ stats.first_index }}">
+                    <span class="deck-name">{{ deck_path }}</span>
+                    <span class="deck-stats">
+                        {% if stats.added > 0 %}<span class="change-badge added">+{{ stats.added }}</span>{% endif %}
+                        {% if stats.modified > 0 %}<span class="change-badge modified">~{{ stats.modified }}</span>{% endif %}
+                        {% if stats.deleted > 0 %}<span class="change-badge deleted">-{{ stats.deleted }}</span>{% endif %}
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+    <main>
+        {% for change in changes %}
+        <section id="note-{{ loop.index }}" class="note-comparison">
+            <h2>Note {{ loop.index }}: {{ change.deck_path }}</h2>
+            <div class="deck-path">
+                <strong>Deck:</strong> {{ change.deck_path }}<br>
+                <strong>Note Type:</strong> {{ change.note_model.name }}<br>
+                <strong>GUID:</strong> <code>{{ change.guid }}</code>
+            </div>
+            <span class="change-badge {{ change.change_type }}">{{ change.change_type }}</span>
+            {% if change.is_cosmetic_only %}
+            <span class="cosmetic-badge" title="This change only affects formatting, not content">
+                ℹ️ {{ change.content_change_type.replace('_', ' ') }}
+            </span>
+            {% endif %}
+
+            {% if change.change_type == "deleted" %}
+            {# Deleted note - show only before #}
+            <div class="side-by-side">
+                <div class="before">
+                    <h3>Deleted Note</h3>
+                    {% if change.rendered_before %}
+                    <div class="card-front">
+                        <h4>Front</h4>
+                        <div class="card-content">
+                            {{ change.rendered_before.front|safe }}
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <h4>Back</h4>
+                        <div class="card-content">
+                            {{ change.rendered_before.back|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="after">
+                    <h3>Current</h3>
+                    <p class="empty">Note has been deleted</p>
+                </div>
+            </div>
+
+            {% elif change.change_type == "added" %}
+            {# Added note - show only after #}
+            <div class="side-by-side">
+                <div class="before">
+                    <h3>Previous</h3>
+                    <p class="empty">Note did not exist</p>
+                </div>
+                <div class="after">
+                    <h3>New Note</h3>
+                    {% if change.rendered_after %}
+                    <div class="card-front">
+                        <h4>Front</h4>
+                        <div class="card-content">
+                            {{ change.rendered_after.front|safe }}
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <h4>Back</h4>
+                        <div class="card-content">
+                            {{ change.rendered_after.back|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% else %}
+            {# Modified note - show both #}
+            <div class="side-by-side">
+                <div class="before">
+                    <h3>Before</h3>
+                    {% if change.rendered_before %}
+                    <div class="card-front">
+                        <h4>Front</h4>
+                        <div class="card-content">
+                            {{ change.rendered_before.front|safe }}
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <h4>Back</h4>
+                        <div class="card-content">
+                            {{ change.rendered_before.back|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="after">
+                    <h3>After</h3>
+                    {% if change.rendered_after %}
+                    <div class="card-front">
+                        <h4>Front</h4>
+                        <div class="card-content">
+                            {{ change.rendered_after.front|safe }}
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <h4>Back</h4>
+                        <div class="card-content">
+                            {{ change.rendered_after.back|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Field-by-field diff #}
+            {% if change.field_diffs %}
+            <details class="field-changes">
+                <summary>Field-by-field Comparison</summary>
+                <table class="field-diff-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Before</th>
+                            <th>After</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_diff in change.field_diffs %}
+                        <tr>
+                            <td><strong>{{ field_diff.name }}</strong></td>
+                            <td class="diff-before">{{ field_diff.before }}</td>
+                            <td class="diff-after">{{ field_diff.after }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </details>
+            {% endif %}
+
+            {# Tags #}
+            {% if change.after and change.after.tags %}
+            <div class="note-tags">
+                <strong>Tags:</strong>
+                {% for tag in change.after.tags %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% elif change.before and change.before.tags %}
+            <div class="note-tags">
+                <strong>Tags:</strong>
+                {% for tag in change.before.tags %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% endfor %}
+    </main>
+
+    <a href="#" class="back-to-top">↑ Top</a>
+
+    {% elif total_changes > 0 and rendered_count == 0 %}
+    <main>
+        <section class="note-comparison">
+            <p class="empty">All {{ total_changes }} note change(s) were cosmetic-only and have been hidden. See summary above for details.</p>
+        </section>
+    </main>
+    {% else %}
+    <main>
+        <section class="note-comparison">
+            <p class="empty">No note changes detected in this commit.</p>
+        </section>
+    </main>
+    {% endif %}
+
+    <script>
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

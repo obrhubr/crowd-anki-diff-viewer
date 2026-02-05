@@ -1,0 +1,5 @@
+.claude
+.devcontainer
+example_deck/**
+__pycache__
+.egg-info

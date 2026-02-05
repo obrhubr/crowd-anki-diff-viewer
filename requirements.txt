@@ -1,0 +1,6 @@
+pydantic>=2.0.0
+gitpython>=3.1.0
+jinja2>=3.1.0
+click>=8.1.0
+diff-match-patch>=20200713
+beautifulsoup4>=4.12.0
