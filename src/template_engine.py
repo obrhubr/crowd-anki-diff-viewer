@@ -139,9 +139,11 @@ class AnkiTemplateEngine:
         for field_name, field_value in fields.items():
             # Escape field name for regex
             escaped_name = re.escape(field_name)
+            # Use lambda to prevent backslashes in field_value from being
+            # interpreted as regex escape sequences (e.g., LaTeX notation like \sum, \l)
             template = re.sub(
                 f'\\{{\\{{{escaped_name}\\}}\\}}',
-                field_value,
+                lambda m: field_value,
                 template
             )
 
