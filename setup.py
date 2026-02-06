@@ -16,7 +16,7 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     package_data={
-        "": ["templates/*.html", "templates/*.jinja2", "templates/*.css"],
+        "src": ["templates/*.html", "templates/*.jinja2", "templates/*.css"],
     },
     install_requires=requirements,
     python_requires=">=3.9",

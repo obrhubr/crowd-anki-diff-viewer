@@ -28,8 +28,8 @@ class HTMLDiffGenerator:
             template_dir: Directory containing Jinja2 templates
         """
         if template_dir is None:
-            # Default to templates/ in project root
-            template_dir = Path(__file__).parent.parent / "templates"
+            # Default to templates/ in src directory
+            template_dir = Path(__file__).parent / "templates"
 
         self.template_dir = Path(template_dir)
 
