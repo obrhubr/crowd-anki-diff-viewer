@@ -1,6 +1,6 @@
 """Setup configuration for crowd-anki-diff-rendering."""
 
-from setuptools import setup
+from setuptools import find_packages, setup
 from pathlib import Path
 
 # Read requirements
@@ -14,6 +14,7 @@ setup(
     version="0.1.0",
     description="Automatically render crowd-anki deck changes for easy diff viewing",
     include_package_data=True,
+    packages=find_packages(),
     package_data={
         "": ["templates/*.html", "templates/*.jinja2", "templates/*.css"],
     },
