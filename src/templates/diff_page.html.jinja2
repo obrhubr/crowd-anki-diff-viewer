@@ -203,8 +203,8 @@
                         {% for field_diff in change.field_diffs %}
                         <tr>
                             <td><strong>{{ field_diff.name }}</strong></td>
-                            <td class="diff-before">{{ field_diff.before }}</td>
-                            <td class="diff-after">{{ field_diff.after }}</td>
+                            <td class="diff-before">{{ field_diff.before|safe }}</td>
+                            <td class="diff-after">{{ field_diff.after|safe }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

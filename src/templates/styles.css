@@ -245,6 +245,17 @@ main {
     border-radius: 2px;
 }
 
+/* Diff highlighting in card content */
+.card-content del {
+    background: #fbb6c2;
+    text-decoration: line-through;
+}
+
+.card-content ins {
+    background: #d4fcbc;
+    text-decoration: none;
+}
+
 /* Field diff styling */
 .field-changes {
     margin-top: 1.5rem;
@@ -298,14 +309,14 @@ main {
     word-break: break-word;
 }
 
-.diff-before ins {
-    background: #d4fcbc;
-    text-decoration: none;
-}
-
-.diff-after del {
+.diff-before del {
     background: #fbb6c2;
     text-decoration: line-through;
+}
+
+.diff-after ins {
+    background: #d4fcbc;
+    text-decoration: none;
 }
 
 /* Image occlusion styling */

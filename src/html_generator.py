@@ -198,10 +198,11 @@ class HTMLDiffGenerator:
 
             # Only include if there's a difference
             if before_value != after_value:
+                highlighted_before, highlighted_after = self._highlight_diff(before_value, after_value)
                 field_diffs.append({
                     'name': field_def.name,
-                    'before': before_value,
-                    'after': after_value
+                    'before': highlighted_before,
+                    'after': highlighted_after
                 })
 
         return field_diffs
